@@ -10,7 +10,7 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.autograd import Variable
 
-# G(z)
+# Generator Class
 class generator(nn.Module):
     # initializers
     def __init__(self, d=128):
@@ -41,6 +41,7 @@ class generator(nn.Module):
 
         return x
 
+ #Discriminator Class
 class discriminator(nn.Module):
     # initializers
     def __init__(self, d=128):
@@ -142,7 +143,7 @@ img_size = 64
 transform = transforms.Compose([
         transforms.Scale(img_size),
         transforms.ToTensor(),
-        transforms.Normalize([0.5] , [0.5]))
+        transforms.Normalize([0.5] , [0.5])) #Defining the transforms to applied on the images
 ])
 train_loader = torch.utils.data.DataLoader(
     datasets.MNIST('data', train=True, download=True, transform=transform),
@@ -164,21 +165,21 @@ G_optimizer = optim.Adam(G.parameters(), lr=lr, betas=(0.5, 0.999))
 D_optimizer = optim.Adam(D.parameters(), lr=lr, betas=(0.5, 0.999))
 
 # results save folder
-if not os.path.isdir('MNIST_DCGAN_results'):
-    os.mkdir('MNIST_DCGAN_results')
-if not os.path.isdir('MNIST_DCGAN_results/Random_results'):
-    os.mkdir('MNIST_DCGAN_results/Random_results')
-if not os.path.isdir('MNIST_DCGAN_results/Fixed_results'):
-    os.mkdir('MNIST_DCGAN_results/Fixed_results')
+if not os.path.isdir('MNIST_Results'):
+    os.mkdir('MNIST_Results')
+if not os.path.isdir('MNIST_Results/Random_results'):
+    os.mkdir('MNIST_Results/Random_results')
+if not os.path.isdir('MNIST_Results/Fixed_results'):
+    os.mkdir('MNIST_Results/Fixed_results')
 
 train_hist = {}
 train_hist['D_losses'] = []
 train_hist['G_losses'] = []
-train_hist['per_epoch_ptimes'] = []
-train_hist['total_ptime'] = []
+train_hist['per_epoch_time'] = []
+train_hist['total_time'] = []
 num_iter = 0
 
-print('training start!')
+print('Start of Training')
 start_time = time.time()
 for epoch in range(train_epoch):
     D_losses = []
@@ -230,13 +231,13 @@ for epoch in range(train_epoch):
         num_iter += 1
 
     epoch_end_time = time.time()
-    per_epoch_ptime = epoch_end_time - epoch_start_time
+    per_epoch_time = epoch_end_time - epoch_start_time
 
 
-    print('[%d/%d] - ptime: %.2f, loss_d: %.3f, loss_g: %.3f' % ((epoch + 1), train_epoch, per_epoch_ptime, torch.mean(torch.FloatTensor(D_losses)),
+    print('[%d/%d] - time: %.2f, loss_d: %.3f, loss_g: %.3f' % ((epoch + 1), train_epoch, per_epoch_time, torch.mean(torch.FloatTensor(D_losses)),
                                                               torch.mean(torch.FloatTensor(G_losses))))
-    p = 'MNIST_DCGAN_results/Random_results/MNIST_DCGAN_' + str(epoch + 1) + '.png'
-    fixed_p = 'MNIST_DCGAN_results/Fixed_results/MNIST_DCGAN_' + str(epoch + 1) + '.png'
+    p = 'MNIST_Results/Random_results/MNIST_DCGAN_' + str(epoch + 1) + '.png'
+    fixed_p = 'MNIST_Results/Fixed_results/MNIST_DCGAN_' + str(epoch + 1) + '.png'
     show_result((epoch+1), save=True, path=p, isFix=False)
     show_result((epoch+1), save=True, path=fixed_p, isFix=True)
     train_hist['D_losses'].append(torch.mean(torch.FloatTensor(D_losses)))
@@ -244,20 +245,22 @@ for epoch in range(train_epoch):
     train_hist['per_epoch_ptimes'].append(per_epoch_ptime)
 
 end_time = time.time()
-total_ptime = end_time - start_time
-train_hist['total_ptime'].append(total_ptime)
+total_time = end_time - start_time
+train_hist['total_time'].append(total_time)
 
-print("Avg per epoch ptime: %.2f, total %d epochs ptime: %.2f" % (torch.mean(torch.FloatTensor(train_hist['per_epoch_ptimes'])), train_epoch, total_ptime))
-print("Training finish!... save training results")
-torch.save(G.state_dict(), "MNIST_DCGAN_results/generator_param.pkl")
-torch.save(D.state_dict(), "MNIST_DCGAN_results/discriminator_param.pkl")
-with open('MNIST_DCGAN_results/train_hist.pkl', 'wb') as f:
+print("Avg per epoch ptime: %.2f, total %d epochs ptime: %.2f" % (torch.mean(torch.FloatTensor(train_hist['per_epoch_time'])), train_epoch, total_time))
+print("Finished Training... save training results")
+
+#Saving the models
+torch.save(G.state_dict(), "MNIST_Results/generator_params.pkl")
+torch.save(D.state_dict(), "MNIST_Results/discriminator_params.pkl")
+with open('MNIST_Results/train_hist.pkl', 'wb') as f:
     pickle.dump(train_hist, f)
 
-show_train_hist(train_hist, save=True, path='MNIST_DCGAN_results/MNIST_DCGAN_train_hist.png')
+show_train_hist(train_hist, save=True, path='MNIST_Results/MNIST_DCGAN_train_hist.png')
 
 images = []
 for e in range(train_epoch):
-    img_name = 'MNIST_DCGAN_results/Fixed_results/MNIST_DCGAN_' + str(e + 1) + '.png'
+    img_name = 'MNIST_Results/Fixed_results/MNIST_DCGAN_' + str(e + 1) + '.png'
     images.append(imageio.imread(img_name))
-imageio.mimsave('MNIST_DCGAN_results/generation_animation.gif', images, fps=5)
+imageio.mimsave('MNIST_Results/Mnist_gen.gif', images, fps=5)
