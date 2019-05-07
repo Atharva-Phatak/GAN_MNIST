@@ -1,6 +1,6 @@
 # PyTorch-MNIST-DCGAN
 
-A PyTorch implementationo of Deep convolutional Generative Adversarial Networks(DCGAN) for MNIST dataset.
+A PyTorch implementation of Deep convolutional Generative Adversarial Networks(DCGAN) for MNIST dataset.
   
   * You can download 
       * MNIST dataset : <http://yann.lecun.com/exdb/mnist/>
